@@ -1,27 +1,21 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import requests
 
-# Lista obsługiwanych walut
-CURRENCIES = ['USD', 'GBP', 'JPY', 'EUR', 'PLN']
+# Kursy walut względem PLN (stan na 13 maja 2025)
+RATES_TO_PLN = {
+    'USD': 3.8271,
+    'GBP': 5.058,
+    'EUR': 4.252,
+    'JPY': 0.025827,
+    'PLN': 1.0,
+}
 
-def get_rates(base='USD'):
-    """
-    Pobiera kursy walut względem waluty bazowej (base)
-    z darmowego API exchangerate.host.
-    Zwraca słownik {'USD': 1.0, 'EUR': 0.92, ...}
-    """
-    url = f"https://api.exchangerate.host/latest?base={base}&symbols={','.join(CURRENCIES)}"
-    resp = requests.get(url, timeout=5)
-    resp.raise_for_status()
-    data = resp.json()
-    return data['rates']
+CURRENCIES = list(RATES_TO_PLN.keys())
 
 def convert():
-    """Obsługa przycisku Konwertuj"""
-    amt_str = amount_var.get()
+    """Obsługa przycisku Konwertuj: najpierw na PLN, potem na walutę docelową."""
     try:
-        amt = float(amt_str)
+        amt = float(amount_var.get().replace(',', '.'))
     except ValueError:
         messagebox.showerror("Błąd", "Nieprawidłowa kwota")
         return
@@ -32,21 +26,17 @@ def convert():
         result_var.set(f"{amt:.2f} {to}")
         return
 
-    try:
-        rates = get_rates(base=frm)
-        rate = rates[to]
-        converted = amt * rate
-        result_var.set(f"{converted:.2f} {to}")
-    except Exception as e:
-        messagebox.showerror("Błąd", f"Nie udało się pobrać kursu:\n{e}")
+    # konwersja: najpierw na PLN, potem na docelową
+    pln = amt * RATES_TO_PLN[frm]
+    converted = pln / RATES_TO_PLN[to]
+    result_var.set(f"{converted:.2f} {to}")
 
 # --- GUI ---
 root = tk.Tk()
-root.title("Przelicznik walut")
+root.title("Przelicznik walut (kursy stałe)")
 
-# Wygląd i styl
 style = ttk.Style(root)
-style.theme_use('clam')  # albo 'alt', 'default', 'classic'
+style.theme_use('clam')  # lekkie, nowoczesne
 
 frm = ttk.Frame(root, padding=20)
 frm.grid(row=0, column=0)
