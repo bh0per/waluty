@@ -2,7 +2,7 @@
 
 rate = 4.252
 
-print("=== Źle/*+! ")
+print("===")
 amt = float(input("Podaj kwotę: "))            
 mode = input("Wybierz kierunek (e – EUR→PLN, p – PLN→EUR): ")
 
